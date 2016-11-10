@@ -75,7 +75,7 @@ void loop() {
         rot.SetChanged(ROTARY_ID2);   // force an update, doesnt matter which one   
     }
 
-    if ( rot.HasRotaryValueChanged() || rot.HasRotaryValueChanged() ) {
+    if ( rot.HasRotaryValueChanged(ROTARY_ID1) || rot.HasRotaryValueChanged(ROTARY_ID2) ) {
         Serial.print("ROTARY_ID1: "); Serial.println(rot.GetRotaryValue(ROTARY_ID1));
         Serial.print("ROTARY_ID2: "); Serial.println(rot.GetRotaryValue(ROTARY_ID2));  
     }
