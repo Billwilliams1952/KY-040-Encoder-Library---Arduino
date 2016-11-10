@@ -11,7 +11,7 @@ The KY-040 encoder library uses interrupts on the clock line. Because of switch 
 
 ## Installation
 
-Download the ZIP file and extract into your **sketchbook/libraries** directory.
+Download the ZIP file and extract into your **sketchbook/libraries** directory. Exit the Arduino program (if open) and restart it to see the KY-040 library with its sketch examples.
 
 ## API Reference
 
