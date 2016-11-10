@@ -1,0 +1,23 @@
+﻿#######################################
+# Syntax Coloring Map For KY-040 Library
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+ky040	KEYWORD1
+
+#######################################
+# ky040
+#######################################
+AddRotaryCounter	KEYWORD2
+SetRotary	KEYWORD2
+HasRotaryValueChanged	KEYWORD2
+SetChanged	KEYWORD2
+GetRotaryValue	KEYWORD2
+SetMaxValueOnRotary	KEYWORD2
+IsActive	KEYWORD2
+SwitchPressed	KEYWORD2
+CURRENT_ID	KEYWORD2
+
