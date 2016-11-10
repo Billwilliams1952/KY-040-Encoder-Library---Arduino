@@ -15,6 +15,25 @@ Download the ZIP file and extract into your **sketchbook/libraries** directory. 
 
 ## API Reference
 
+	ky040 ( byte interruptClkPin, byte dtPin, byte switchPin, byte maxRotarys = 1 );
+	
+	bool AddRotaryCounter(byte id, int currentVal, int minVal, int maxVal, 
+						  int inc = 1, bool rollOver = true);
+	
+	bool SetRotary ( byte id );
+
+	bool HasRotaryValueChanged ( byte id = CURRENT_ID );
+
+	void SetChanged ( byte id = CURRENT_ID );
+	
+	int GetRotaryValue ( byte id = CURRENT_ID );
+
+	void SetMaxValueOnRotary ( int maxVal, byte id = CURRENT_ID );
+
+	bool IsActive ( byte id );
+
+	bool SwitchPressed ( void );
+
 This program uses the Arduino API (**Arduino.h**) and **stdlib.h**; no other special libraries are required. It has been tested on the Arduino Micro.
 
 ## Tests
