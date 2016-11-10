@@ -68,8 +68,8 @@ void loop() {
     }
 
     if ( rot.HasRotaryValueChanged() || rot.HasRotaryValueChanged() ) {
-        Serial.print("Encoder 1: "); Serial.println(rot.GetRotaryValue(ROTARY_ID1));
-        Serial.print("Encoder 2: "); Serial.println(rot.GetRotaryValue(ROTARY_ID2));  
+        Serial.print("ROTARY_ID1: "); Serial.println(rot.GetRotaryValue(ROTARY_ID1));
+        Serial.print("ROTARY_ID2: "); Serial.println(rot.GetRotaryValue(ROTARY_ID2));  
     }
 
 }
