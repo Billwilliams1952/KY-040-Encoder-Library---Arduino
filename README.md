@@ -5,4 +5,5 @@ This library allows the user to connect up to two encoders using interrupts 0 (p
 
 The KY-040 encoder library uses interrupts on the clock line.  Becuase of switch bounces, a 470 nF (0.47 uF) capacitor is required on each clock pin.
 
-The code has been tested on an Arduino Micro. See the Examples directory.  Also, a sketch using multiple rotarys for one encoder may be found under  
+The code has been tested on an Arduino Micro. See the Examples directory.  Also, a sketch using multiple rotarys for one encoder may be found under https://github.com/Billwilliams1952/Arduino-Controlled-Fan-Tester 
+
