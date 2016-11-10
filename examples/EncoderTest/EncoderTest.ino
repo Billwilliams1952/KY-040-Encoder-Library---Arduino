@@ -1,4 +1,4 @@
-﻿/*
+/*
  * EncoderTest.ino
  * 2016 WLWilliams
  * 
@@ -39,6 +39,9 @@ ky040 rot(ENCODER_CLK, ENCODER_DT, ENCODER_SW, MAX_ROTARIES );
 
 void setup() {
     // put your setup code here, to run once:
+        
+    Serial.begin(9600);   // write out the values
+    delay(100);
 
     // Add the two rotaries defined above.
     // Define a rotary to go from -20 to 20 in increments of 2. Initialize it to 10. Allow it to rollover
@@ -49,9 +52,9 @@ void setup() {
 
     // Make ROTARY_ID2 active (responds to encoder shaft movements)
     rot.SetRotary(ROTARY_ID2);
+    Serial.println("ROTARY_ID2 Active");
+    
     rot.SetChanged(ROTARY_ID2); // This way we can force an update the first time through
-
-    Serial.begin(9600);   // write out the values
 }
 
 void loop() {
@@ -61,10 +64,15 @@ void loop() {
     // Use the IsActive call
   
     if ( rot.SwitchPressed() ) {
-        if ( rot.IsActive(ROTARY_ID1) )
+        if ( rot.IsActive(ROTARY_ID1) ) {
             rot.SetRotary(ROTARY_ID2);
-        else
+            Serial.println("ROTARY_ID2 Active");
+        }
+        else {
             rot.SetRotary(ROTARY_ID1);
+            Serial.println("ROTARY_ID1 Active");
+        }
+        rot.SetChanged(ROTARY_ID2);   // force an update, doesnt matter which one   
     }
 
     if ( rot.HasRotaryValueChanged() || rot.HasRotaryValueChanged() ) {
