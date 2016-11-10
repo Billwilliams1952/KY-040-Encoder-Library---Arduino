@@ -54,14 +54,18 @@ void setup() {
     rot.SetRotary(ROTARY_ID2);
     Serial.println("ROTARY_ID2 Active");
     
-    rot.SetChanged(ROTARY_ID2); // This way we can force an update the first time through
+    rot.SetChanged(ROTARY_ID2); // This way we can force an update the first time through the loop
 }
 
 void loop() {
     // put your main code here, to run repeatedly:
   
     // On each encoder switch press, toggle between the two rotaries and print their values.
-    // Use the IsActive call
+    // Use the IsActive call.
+  
+    // As the user rotates the encoder shaft, the library counts the clocks and updates the active rotary's value.
+    // The user can check the status of a rotary using IsActive and HasRotaryValueChanged. The current value for a 
+    // rotary is obtained using the GetRotaryValue function.
   
     if ( rot.SwitchPressed() ) {
         if ( rot.IsActive(ROTARY_ID1) ) {
@@ -72,7 +76,7 @@ void loop() {
             rot.SetRotary(ROTARY_ID1);
             Serial.println("ROTARY_ID1 Active");
         }
-        rot.SetChanged(ROTARY_ID2);   // force an update, doesnt matter which one   
+        rot.SetChanged(ROTARY_ID2);   // force an update, doesn't matter which one for this test case.  
     }
 
     if ( rot.HasRotaryValueChanged(ROTARY_ID1) || rot.HasRotaryValueChanged(ROTARY_ID2) ) {
