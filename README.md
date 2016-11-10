@@ -15,7 +15,7 @@ Download the ZIP file and extract into your **sketchbook/libraries** directory. 
 
 ## API Reference
 
-This program uses the Arduino API; no other special libraries are required. It has been tested on the Arduino Micro.
+This program uses the Arduino API (**Arduino.h**) and **stdlib.h**; no other special libraries are required. It has been tested on the Arduino Micro.
 
 ## Tests
 
