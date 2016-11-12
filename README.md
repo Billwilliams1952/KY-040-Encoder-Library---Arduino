@@ -18,8 +18,8 @@ Download the ZIP file and extract into your **sketchbook/libraries** directory. 
 	ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin,
 			uint8_t maxRotarys = 1 );
 	
-	bool AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
-			int16_t maxVal, int16_t inc = 1, bool rollOver = true);
+	bool AddRotaryCounter ( uint8_t id, int16_t currentVal, int16_t minVal,
+			int16_t maxVal, int16_t inc = 1, bool rollOver = true );
 	
 	bool SetRotary ( uint8_t id );
 
