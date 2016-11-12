@@ -70,12 +70,12 @@ public:
 	
 private:
 	
-	uint8_t numRotarys,
-			clkPin,
+	uint8_t	maxRotaries = 0,	// maximum allowed rotaries
+			numRotaries = 0,	// how many have been added
+			clkPin,				// pin definitions for the encoder
 			dtPin,
 			swPin,
-			maxRotarys,
-			currentID;
+			currentID;			// which rotary is active
 		
 	encoderParams *params;
 	volatile encoderParams *currentRotaryParams;

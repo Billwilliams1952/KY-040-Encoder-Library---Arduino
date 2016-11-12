@@ -39,28 +39,27 @@ uint8_t ky040 :: dtPin_1 = 0;		// initalize to invalid pins
  * variables.
  */
 //volatile encoderParams * ky040 :: params_X;
-//uint8_t ky040 :: dtPin_X = 0;		// initalize to invalid pins
+//uint8_t ky040 :: dtPin_X = 0;		// initialize to invalid pins
 
 /*
  * Encoder object creation. We don't attach the interrupt procedure here
- * because no rotaries have been added. No some sanity checks on valid
+ * because no rotaries have been added. Some sanity checks on valid
  * parameters.
  *
  * I decided to force the user to define the number of rotaries at object
  * creation to ensure there is enough memory. I didn't want to get into
  * malloc's, and realloc's later. Does this fix all problems? Can the
- * user try to create rotaries later
+ * user try to create rotaries later? No and Yes.
  */
-ky040 :: ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin, uint8_t maxRotarys ) {
-	numRotarys = 0;
-	this->maxRotarys = 0;
+ky040 :: ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin,
+				 uint8_t maxRotarys ) {
 	// Add more checks here to add more interrupts
 	if ( (interruptClkPin != 2) && (interruptClkPin != 3) )
 		return;			// Wrong interrupt pins, error
 	params = (encoderParams *) malloc(maxRotarys * sizeof(encoderParams));
 	if ( params == 0 )	// Major malloc error
 		return;
-	this->maxRotarys = maxRotarys;
+	maxRotaries = maxRotarys;
 	// No checks on the switch or dt pins - ???
 	swPin = switchPin;
 	pinMode(swPin,INPUT_PULLUP);
@@ -74,6 +73,7 @@ ky040 :: ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin, uint
 // Detach the interrupt. then free the memory that was malloc'd, then
 // reset the dtPin_XX to 0.
 ky040 :: ~ ky040 ( ) {
+	noInterrupts();
 	if ( (clkPin == 2) && (ky040::dtPin_1 != 0) ) {
 		ky040::dtPin_1 = 0;
 		detachInterrupt(1);
@@ -87,6 +87,7 @@ ky040 :: ~ ky040 ( ) {
 	//	detachInterrupt(X);
 	//}
 	free(params);
+	interrupts();
 }
 
 /*
@@ -98,15 +99,15 @@ ky040 :: ~ ky040 ( ) {
  */
 bool ky040 :: AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
 							   int16_t maxVal, int16_t inc, bool rollOver ) {
-	if ( (id != CURRENT_ID) && !GetParamsFromID(id) && (numRotarys < maxRotarys) ) {
-		params[numRotarys].id = id;
-		params[numRotarys].currentVal = currentVal;
-		params[numRotarys].minVal = minVal;
-		params[numRotarys].maxVal = maxVal;
-		params[numRotarys].inc = inc;
-		params[numRotarys].rollOver = rollOver;
-		params[numRotarys].changed = false;
-		numRotarys++;
+	if ( (id != CURRENT_ID) && !GetParamsFromID(id) && (numRotaries < maxRotaries) ) {
+		params[numRotaries].id = id;
+		params[numRotaries].currentVal = currentVal;
+		params[numRotaries].minVal = minVal;
+		params[numRotaries].maxVal = maxVal;
+		params[numRotaries].inc = inc;
+		params[numRotaries].rollOver = rollOver;
+		params[numRotaries].changed = false;
+		numRotaries++;
 		SetRotary(id);		// Make this one active
 		// Has the interrupt procedure been attached yet?
 		if ( (clkPin == 2) && (ky040::dtPin_1 == 0) ) {
@@ -168,7 +169,8 @@ bool ky040 :: HasRotaryValueChanged ( uint8_t id ) {
 
 /*
  * Set the maximum value for the requested rotary. TODO: have a generic
- * fuction to changed all of the parameters on a rotary.
+ * fuction to changed all of the parameters on a rotary. How often
+ * would this be needed?
  */
 void ky040 :: SetMaxValueOnRotary ( int16_t maxVal, uint8_t id ) {
 	if ( GetParamsFromID ( id ) ) {
@@ -223,7 +225,7 @@ bool ky040 :: SwitchPressed ( void ) {
  */
 bool ky040 :: GetParamsFromID ( uint8_t id ) {
 	if ( id == CURRENT_ID ) id = currentID;
-	for ( uint8_t i = 0; i < numRotarys; i++ ) {
+	for ( uint8_t i = 0; i < numRotaries; i++ ) {
 		if ( id == params[i].id )	{
 			currentRotaryParams = &params[i];
 			return true;
@@ -253,6 +255,10 @@ void ky040 :: RotaryClkInterruptOn_1 ( void ) {
  * Generic procedure to increment/decrement the rotary counter
  */
 void ky040 :: UpdateRotaryCount ( uint8_t pin, volatile encoderParams * params ) {
+	// TODO: Add an acceleration test. Store time, then at each interrupt
+	// check interval from last interrupt, if smaller than TBD msec,
+	// increase increment (multiply by 2, 4, 8?). How to handle rollover
+	// is one problem that I need to think about. 
 	params->changed = true;
 	// TODO: Could use a direct port read here.... save some time.
 	// TODO: Could just increment / decrement a counter. The actual value
