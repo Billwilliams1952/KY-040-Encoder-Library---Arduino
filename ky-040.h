@@ -32,11 +32,11 @@
 #define CURRENT_ID		255
 
 typedef struct encoderP {
-	int id;
-	int currentVal;
-	int minVal;
-	int maxVal;
-	int inc;
+	uint8_t id;
+	int16_t currentVal;
+	int16_t minVal;
+	int16_t maxVal;
+	int16_t inc;
 	bool rollOver, changed;
 } encoderParams;
 	
@@ -44,44 +44,45 @@ class ky040 {
 
 public:
 	
-	ky040 ( byte interruptClkPin, byte dtPin, byte switchPin, byte maxRotarys = 1 );
+	ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin,
+			uint8_t maxRotarys = 1 );
 	
-	bool AddRotaryCounter(byte id, int currentVal, int minVal, int maxVal, 
-						  int inc = 1, bool rollOver = true);
+	bool AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
+			int16_t maxVal, int16_t inc = 1, bool rollOver = true);
 	
-	bool SetRotary ( byte id );
+	bool SetRotary ( uint8_t id );
 
-	bool HasRotaryValueChanged ( byte id = CURRENT_ID );
+	bool HasRotaryValueChanged ( uint8_t id = CURRENT_ID );
 
-	void SetChanged ( byte id = CURRENT_ID );
+	void SetChanged ( uint8_t id = CURRENT_ID );
 	
-	int GetRotaryValue ( byte id = CURRENT_ID );
+	int16_t GetRotaryValue ( uint8_t id = CURRENT_ID );
 
-	void SetMaxValueOnRotary ( int maxVal, byte id = CURRENT_ID );
+	void SetMaxValueOnRotary ( int16_t maxVal, uint8_t id = CURRENT_ID );
 
-	bool IsActive ( byte id );
+	bool IsActive ( uint8_t id );
 
 	bool SwitchPressed ( void );
 	
 private:
 	
-	byte numRotarys,
-		clkPin,
-		dtPin,
-		swPin,
-		maxRotarys;
-	byte currentID;
+	uint8_t numRotarys,
+			clkPin,
+			dtPin,
+			swPin,
+			maxRotarys,
+			currentID;
 		
 	encoderParams *params;
 	volatile encoderParams *currentRotaryParams;
-	bool GetParamsFromID ( byte id );
+	bool GetParamsFromID ( uint8_t id );
 	
 	static volatile encoderParams * params_0, *params_1;
-	static byte dtPin_0;
-	static byte dtPin_1;
+	static uint8_t dtPin_0;
+	static uint8_t dtPin_1;
 	static void RotaryClkInterruptOn_0 ( void );
 	static void RotaryClkInterruptOn_1 ( void );
-	static void UpdateRotaryCount ( byte pin, volatile encoderParams * params );
+	static void UpdateRotaryCount ( uint8_t pin, volatile encoderParams * params );
 	
 };
 
