@@ -41,7 +41,7 @@ void setup() {
     // put your setup code here, to run once:
         
     Serial.begin(9600);   // write out the values
-    delay(100);
+    delay(5000);
 
     // Add the two rotaries defined above.
     // Define a rotary to go from -20 to 20 in increments of 2. Initialize it to 10. Allow it to rollover
