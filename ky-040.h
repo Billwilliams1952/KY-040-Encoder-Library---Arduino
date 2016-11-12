@@ -3,6 +3,8 @@
  * ky-040.h
  * 
  * Copyright 2016 Bill Williams <wlwilliams1952@gmail.com, github/Billwilliams1952>
+ *
+ * Library to interface with the KY-040 rotary encoder.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,6 +48,8 @@ public:
 	
 	ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin,
 			uint8_t maxRotarys = 1 );
+
+	~ ky040 ( );
 	
 	bool AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
 			int16_t maxVal, int16_t inc = 1, bool rollOver = true);
@@ -76,7 +80,11 @@ private:
 	encoderParams *params;
 	volatile encoderParams *currentRotaryParams;
 	bool GetParamsFromID ( uint8_t id );
-	
+
+/*
+ * To add more encoders, define more params_X, dtPin_X and
+ * interrupt handlers RotaryClkInterruptOn_X
+ */
 	static volatile encoderParams * params_0, *params_1;
 	static uint8_t dtPin_0;
 	static uint8_t dtPin_1;

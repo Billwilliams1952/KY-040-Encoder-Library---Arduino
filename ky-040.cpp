@@ -3,6 +3,8 @@
  *
  * Copyright 2016 Bill Williams <wlwilliams1952@gmail.com, github/Billwilliams1952>
  *
+ * Library to interface with the KY-040 rotary encoder.
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -23,22 +25,36 @@
 #include "ky-040.h"
 
 /*
- * The interrupt parameters. This library currently only supports the two
- * interrupts on pins 2 and 3.
+ * The interrupt parameters. This library currently only supports up to
+ * two encoders - one on pin 3 (interrupt 0) and one on pin 2 (interrupt
+ * 1).
+ * See code comments for suggestions on how to add additional interrupts.
  */
 volatile encoderParams * ky040 :: params_0;
 volatile encoderParams * ky040 :: params_1;
 uint8_t ky040 :: dtPin_0 = 0;		// initalize to invalid pins
 uint8_t ky040 :: dtPin_1 = 0;		// initalize to invalid pins
+/* More could be added, just requires more params_XX and dtPin_XX
+ * definitions.... edits to the header file to define the additional
+ * variables.
+ */
+//volatile encoderParams * ky040 :: params_X;
+//uint8_t ky040 :: dtPin_X = 0;		// initalize to invalid pins
 
 /*
  * Encoder object creation. We don't attach the interrupt procedure here
  * because no rotaries have been added. No some sanity checks on valid
  * parameters.
+ *
+ * I decided to force the user to define the number of rotaries at object
+ * creation to ensure there is enough memory. I didn't want to get into
+ * malloc's, and realloc's later. Does this fix all problems? Can the
+ * user try to create rotaries later
  */
 ky040 :: ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin, uint8_t maxRotarys ) {
 	numRotarys = 0;
 	this->maxRotarys = 0;
+	// Add more checks here to add more interrupts
 	if ( (interruptClkPin != 2) && (interruptClkPin != 3) )
 		return;			// Wrong interrupt pins, error
 	params = (encoderParams *) malloc(maxRotarys * sizeof(encoderParams));
@@ -52,6 +68,25 @@ ky040 :: ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin, uint
 	pinMode(clkPin,INPUT_PULLUP);
 	this->dtPin = dtPin;
 	pinMode(dtPin,INPUT_PULLUP);
+}
+
+// Object going away.  How often is this needed???????
+// Detach the interrupt. then free the memory that was malloc'd, then
+// reset the dtPin_XX to 0.
+ky040 :: ~ ky040 ( ) {
+	if ( (clkPin == 2) && (ky040::dtPin_1 != 0) ) {
+		ky040::dtPin_1 = 0;
+		detachInterrupt(1);
+	}
+	else if ( (clkPin == 3) && (ky040::dtPin_0 != 0) ) {
+		ky040::dtPin_0 = 0;
+		detachInterrupt(0);
+	}
+	//else if ( (clkPin == X) && (ky040::dtPin_X != 0) ) {
+	//	ky040::dtPin_X = 0;
+	//	detachInterrupt(X);
+	//}
+	free(params);
 }
 
 /*
@@ -82,6 +117,14 @@ bool ky040 :: AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
 			ky040::dtPin_0 = dtPin;
 			attachInterrupt(0, ky040::RotaryClkInterruptOn_0, FALLING);
 		}
+		// Add more checks whether the interrupt procedure has been
+		// attached or not.
+		//else if ( (clkPin == XX) && (ky040::dtPin_XX == 0) ) {
+		//	ky040::dtPin_XX = dtPin;
+		//	attachInterrupt(XX, ky040::RotaryClkInterruptOn_XX, FALLING);
+		//}
+		// Etc for more interrupts
+		
 		return true;
 	}
 	return false;		// Add failed.
@@ -97,8 +140,11 @@ bool ky040 :: SetRotary ( uint8_t id ) {
 		noInterrupts();
 		if ( clkPin == 3 )
 			ky040::params_0 = currentRotaryParams;
-		else
+		else // add if ( clkPin == 3 )
 			ky040::params_1 = currentRotaryParams;
+		// else if ( clkPin == XX )
+		//	ky040::params_XX = currentRotaryParams
+		// etc
 		interrupts();
 		return true;
 	}
@@ -188,7 +234,8 @@ bool ky040 :: GetParamsFromID ( uint8_t id ) {
 
 /*----------------------------------------------------------------------
  * The actual interrupt procedure for each of the two possible encoders
- * that may be connected to the Arduino.
+ * that may be connected to the Arduino. To add more encoders, declare
+ * more interrupt routines and tie then to the appropriate data.
  */
 void ky040 :: RotaryClkInterruptOn_0 ( void ) {
 	ky040::UpdateRotaryCount(ky040::dtPin_0,ky040::params_0);
@@ -197,12 +244,20 @@ void ky040 :: RotaryClkInterruptOn_0 ( void ) {
 void ky040 :: RotaryClkInterruptOn_1 ( void ) {
 	ky040::UpdateRotaryCount(ky040::dtPin_1,ky040::params_1);
 }
+// Declare more RotaryClkInterruptOn_XX functions -
+//void ky040 :: RotaryClkInterruptOn_XX ( void ) {
+//	ky040::UpdateRotaryCount(ky040::dtPin_XX,ky040::params_XX);
+//}
 
 /*
  * Generic procedure to increment/decrement the rotary counter
  */
 void ky040 :: UpdateRotaryCount ( uint8_t pin, volatile encoderParams * params ) {
 	params->changed = true;
+	// TODO: Could use a direct port read here.... save some time.
+	// TODO: Could just increment / decrement a counter. The actual value
+	// could then be calculated in the GetRotaryValue function. This I
+	// have to think about a bit more.
 	if ( digitalRead(pin) == HIGH ) {
 		params->currentVal += params->inc;
 		if ( params->currentVal > params->maxVal ) {
