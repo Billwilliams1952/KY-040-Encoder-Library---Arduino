@@ -112,6 +112,12 @@ bool ky040 :: AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
 		// Has the interrupt procedure been attached yet?
 		if ( (clkPin == 2) && (ky040::dtPin_1 == 0) ) {
 			ky040::dtPin_1 = dtPin;
+			/* The reason we are using the FALLING edge is because of the
+			 * 0.47uF capacitor connected from the interrupt pin to ground.
+			 * With pullups enabled, there is a slow risetime (helping with
+			 * debounce), while the high to low transition occurs quickly,
+			 * improving interrupt response time.
+			 */ 
 			attachInterrupt(1, ky040::RotaryClkInterruptOn_1, FALLING);
 		}
 		else if ( (clkPin == 3) && (ky040::dtPin_0 == 0) ) {
