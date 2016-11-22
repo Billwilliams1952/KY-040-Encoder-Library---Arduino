@@ -3,7 +3,7 @@
 ## Synopsis
 Arduino library for the KY-040 Encoder. 
 
-This library allows the user to connect up to two encoders using interrupts 0 (pin D3) and interrupt 1 (pin D2). The user may then add rotaries that will each keep track of the encoder movement while active. Each rotary is initialized with the rotary ID (a byte value between 0 - 254), an initial integer value, and integer values for minimum, maximum, and increment. Also a boolean rollover flag controls whether the current rotary value wraps from min to max or max to min.
+This library allows the user to connect up to two encoders using interrupts 0 (pin D3) and interrupt 1 (pin D2). The user may then add rotaries that will each keep track of the encoder movement while active. Each rotary is initialized with the rotary ID (a byte value between 0 - 254), an initial integer value, and integer values for minimum, maximum, and increment. Also a boolean rollover flag controls whether the current rotary value wraps from min to max or max to min. If more encoders are needed, the source code provides comments showing what edits would be needed.
 
 Note, memory for the total number of rotaries for an encoder is allocated during object creation. If you attempt to add a rotary using **AddRotaryCounter** that exceeds the limit set during object creation, the function will return **false**.
 
@@ -47,7 +47,7 @@ This program uses the Arduino API (**Arduino.h**) and **stdlib.h**; no other spe
 
 ## Tests
 
-Use the **EncoderTest** example program to verify correct operation.  Be sure to connect a 0.47 uF capacitor from the encoder switch pin input to the Arduino to ground.  Also, a sketch using multiple rotaries for one encoder may be found under https://github.com/Billwilliams1952/Arduino-Controlled-Fan-Tester.
+Use the **EncoderTest** example program to verify correct operation.  Be sure to connect a 0.47 uF capacitor from the encoder **CLK** pin to ground.  Also, a sketch using multiple rotaries for one encoder may be found under https://github.com/Billwilliams1952/Arduino-Controlled-Fan-Tester.
 
 ## License
 
