@@ -15,7 +15,7 @@ The KY-040 encoder library uses interrupts on the clock line. Because of switch 
 
 **0.47 uF capacitor connected between CLK line and ground** 
 
-![alt tag](https://cloud.githubusercontent.com/assets/3778024/20508029/4f5d7db4-b024-11e6-9e45-a4193bc0a804.png)
+![alt tag](https://cloud.githubusercontent.com/assets/3778024/20508570/1a946d00-b028-11e6-8b36-ff34b561c11a.png)
 
 ## Installation
 
