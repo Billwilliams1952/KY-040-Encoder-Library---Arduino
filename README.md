@@ -9,11 +9,13 @@ Note, memory for the total number of rotaries for an encoder is allocated during
 
 The KY-040 encoder library uses interrupts on the clock line. Because of switch bounces, a 470 nF (0.47 uF) capacitor is required on each encoder clock pin connected from the Arduino pin to ground.
 
-**Switch Bounce on Clock (interrupt) line (top trace)**
+<center>**Switch Bounce on Clock (interrupt) line (top trace)**</center>
 
 ![alt tag](https://cloud.githubusercontent.com/assets/3778024/20508020/43905c7c-b024-11e6-939f-2e113498a763.png)
 
-[!alt tag](https://cloud.githubusercontent.com/assets/3778024/20186507/ef862cfc-a735-11e6-9f66-3f124f1604f1.png)
+**0.47 uF capacitor connected between CLK line and ground** 
+
+![alt tag](https://cloud.githubusercontent.com/assets/3778024/20508029/4f5d7db4-b024-11e6-9e45-a4193bc0a804.png)
 
 ## Installation
 
