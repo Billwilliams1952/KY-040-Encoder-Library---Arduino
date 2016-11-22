@@ -7,7 +7,7 @@ This library allows the user to connect up to two encoders using interrupts 0 (p
 
 Note, memory for the total number of rotaries for an encoder is allocated during object creation. If you attempt to add a rotary using **AddRotaryCounter** that exceeds the limit set during object creation, the function will return **false**.
 
-The KY-040 encoder library uses interrupts on the clock line. Because of switch bounces, a 470 nF (0.47 uF) capacitor is required on each encoder clock pin connected from the Arduino pin to ground.
+The KY-040 encoder library uses interrupts on the clock line. Because of switch bounces, a 470 nF (0.47 uF) capacitor is required on each encoder clock (**CLK**) pin to ground.
 
 <center>**Switch Bounce on Clock (interrupt) line (top trace)**</center>
 
