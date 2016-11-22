@@ -11,7 +11,7 @@ The KY-040 encoder library uses interrupts on the clock line. Because of switch 
 
 <center>**Switch Bounce on Clock (interrupt) line (top trace)**</center>
 
-![alt tag](https://cloud.githubusercontent.com/assets/3778024/20508020/43905c7c-b024-11e6-939f-2e113498a763.png)
+![alt tag](https://cloud.githubusercontent.com/assets/3778024/20508566/0f773998-b028-11e6-93be-419c9a08014c.png)
 
 **0.47 uF capacitor connected between CLK line and ground** 
 
