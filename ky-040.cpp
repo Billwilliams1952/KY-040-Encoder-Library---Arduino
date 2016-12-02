@@ -76,16 +76,14 @@ ky040 :: ~ ky040 ( ) {
 	noInterrupts();
 	if ( (clkPin == 2) && (ky040::dtPin_1 != 0) ) {
 		ky040::dtPin_1 = 0;
-		detachInterrupt(1);
 	}
 	else if ( (clkPin == 3) && (ky040::dtPin_0 != 0) ) {
 		ky040::dtPin_0 = 0;
-		detachInterrupt(0);
 	}
 	//else if ( (clkPin == X) && (ky040::dtPin_X != 0) ) {
 	//	ky040::dtPin_X = 0;
-	//	detachInterrupt(X);
 	//}
+	detachInterrupt(digitalPinToInterrupt(clkPin));
 	free(params);
 	interrupts();
 }
