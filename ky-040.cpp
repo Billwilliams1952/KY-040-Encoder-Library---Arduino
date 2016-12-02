@@ -118,17 +118,17 @@ bool ky040 :: AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
 			 * debounce), while the high to low transition occurs quickly,
 			 * improving interrupt response time.
 			 */ 
-			attachInterrupt(1, ky040::RotaryClkInterruptOn_1, FALLING);
+			attachInterrupt(digitalPinToInterrupt(clkPin), ky040::RotaryClkInterruptOn_1, FALLING);
 		}
 		else if ( (clkPin == 3) && (ky040::dtPin_0 == 0) ) {
 			ky040::dtPin_0 = dtPin;
-			attachInterrupt(0, ky040::RotaryClkInterruptOn_0, FALLING);
+			attachInterrupt(digitalPinToInterrupt(clkPin), ky040::RotaryClkInterruptOn_0, FALLING);
 		}
 		// Add more checks whether the interrupt procedure has been
 		// attached or not.
 		//else if ( (clkPin == XX) && (ky040::dtPin_XX == 0) ) {
 		//	ky040::dtPin_XX = dtPin;
-		//	attachInterrupt(XX, ky040::RotaryClkInterruptOn_XX, FALLING);
+		//	attachInterrupt(digitalPinToInterrupt(XX), ky040::RotaryClkInterruptOn_XX, FALLING);
 		//}
 		// Etc for more interrupts
 		
