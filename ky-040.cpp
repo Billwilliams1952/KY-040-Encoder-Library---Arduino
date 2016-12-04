@@ -4,6 +4,9 @@
  * Copyright 2016 Bill Williams <wlwilliams1952@gmail.com, github/Billwilliams1952>
  *
  * Library to interface with the KY-040 rotary encoder.
+ *
+ * The current code only support interrupts on pins 2 and 3. The code
+ * has comments if more interrupt pins are needed.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,7 +17,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -26,20 +28,22 @@
 
 /*
  * The interrupt parameters. This library currently only supports up to
- * two encoders - one on pin 3 (interrupt 0) and one on pin 2 (interrupt
- * 1).
+ * two encoders - one on pin 3 and one on pin 2.
  * See code comments for suggestions on how to add additional interrupts.
  */
-volatile encoderParams * ky040 :: params_0;
-volatile encoderParams * ky040 :: params_1;
-uint8_t ky040 :: dtPin_0 = 0;		// initalize to invalid pins
-uint8_t ky040 :: dtPin_1 = 0;		// initalize to invalid pins
+
+volatile encoderParams * ky040 :: params_3;
+volatile encoderParams * ky040 :: params_2;
+uint8_t ky040 :: dtPin_3 = 0;		// initalize to invalid pins
+uint8_t ky040 :: dtPin_2 = 0;		// initalize to invalid pins
+
 /* More could be added, just requires more params_XX and dtPin_XX
  * definitions.... edits to the header file to define the additional
- * variables.
+ * variables. e.g.
+ * 
+ * volatile encoderParams * ky040 :: params_X;
+ * uint8_t ky040 :: dtPin_X = 0;	// initialize to invalid pins
  */
-//volatile encoderParams * ky040 :: params_X;
-//uint8_t ky040 :: dtPin_X = 0;		// initialize to invalid pins
 
 /*
  * Encoder object creation. We don't attach the interrupt procedure here
@@ -53,39 +57,20 @@ uint8_t ky040 :: dtPin_1 = 0;		// initalize to invalid pins
  */
 ky040 :: ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin,
 				 uint8_t maxRotarys ) {
-	// Add more checks here to add more interrupts
+	/* Add more checks here to add more interrupts */
 	if ( (interruptClkPin != 2) && (interruptClkPin != 3) )
 		return;			// Wrong interrupt pins, error
 	params = (encoderParams *) malloc(maxRotarys * sizeof(encoderParams));
 	if ( params == 0 )	// Major malloc error
 		return;
 	maxRotaries = maxRotarys;
-	// No checks on the switch or dt pins - ???
+	// TODO: Check on validity of pins?
 	swPin = switchPin;
 	pinMode(swPin,INPUT_PULLUP);
 	clkPin = interruptClkPin;
 	pinMode(clkPin,INPUT_PULLUP);
 	this->dtPin = dtPin;
 	pinMode(dtPin,INPUT_PULLUP);
-}
-
-// Object going away.  How often is this needed???????
-// Detach the interrupt. then free the memory that was malloc'd, then
-// reset the dtPin_XX to 0.
-ky040 :: ~ ky040 ( ) {
-	noInterrupts();
-	if ( (clkPin == 2) && (ky040::dtPin_1 != 0) ) {
-		ky040::dtPin_1 = 0;
-	}
-	else if ( (clkPin == 3) && (ky040::dtPin_0 != 0) ) {
-		ky040::dtPin_0 = 0;
-	}
-	//else if ( (clkPin == X) && (ky040::dtPin_X != 0) ) {
-	//	ky040::dtPin_X = 0;
-	//}
-	detachInterrupt(digitalPinToInterrupt(clkPin));
-	free(params);
-	interrupts();
 }
 
 /*
@@ -108,28 +93,32 @@ bool ky040 :: AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
 		numRotaries++;
 		SetRotary(id);		// Make this one active
 		// Has the interrupt procedure been attached yet?
-		if ( (clkPin == 2) && (ky040::dtPin_1 == 0) ) {
-			ky040::dtPin_1 = dtPin;
+		if ( (clkPin == 2) && (ky040::dtPin_2 == 0) ) {
+			ky040::dtPin_2 = dtPin;
 			/* The reason we are using the FALLING edge is because of the
 			 * 0.47uF capacitor connected from the interrupt pin to ground.
 			 * With pullups enabled, there is a slow risetime (helping with
 			 * debounce), while the high to low transition occurs quickly,
-			 * improving interrupt response time.
+			 * into a low impedance - improving interrupt response time.
 			 */ 
-			attachInterrupt(digitalPinToInterrupt(clkPin), ky040::RotaryClkInterruptOn_1, FALLING);
+			attachInterrupt(digitalPinToInterrupt(clkPin),
+				ky040::RotaryClkInterruptOn_2, FALLING);
 		}
-		else if ( (clkPin == 3) && (ky040::dtPin_0 == 0) ) {
-			ky040::dtPin_0 = dtPin;
-			attachInterrupt(digitalPinToInterrupt(clkPin), ky040::RotaryClkInterruptOn_0, FALLING);
+		else if ( (clkPin == 3) && (ky040::dtPin_3 == 0) ) {
+			ky040::dtPin_3 = dtPin;
+			attachInterrupt(digitalPinToInterrupt(clkPin),
+				ky040::RotaryClkInterruptOn_3, FALLING);
 		}
-		// Add more checks whether the interrupt procedure has been
-		// attached or not.
-		//else if ( (clkPin == XX) && (ky040::dtPin_XX == 0) ) {
-		//	ky040::dtPin_XX = dtPin;
-		//	attachInterrupt(digitalPinToInterrupt(XX), ky040::RotaryClkInterruptOn_XX, FALLING);
-		//}
-		// Etc for more interrupts
-		
+		/* Add more checks whether the interrupt procedure has been
+		 * attached or not. e.g.
+		 * 
+		 * else if ( (clkPin == XX) && (ky040::dtPin_XX == 0) ) {
+		 *		ky040::dtPin_XX = dtPin;
+		 *		attachInterrupt(digitalPinToInterrupt(XX),
+		 * 			ky040::RotaryClkInterruptOn_XX, FALLING);
+		 * }
+		 * Etc for more interrupts
+		 */
 		return true;
 	}
 	return false;		// Add failed.
@@ -144,12 +133,13 @@ bool ky040 :: SetRotary ( uint8_t id ) {
 		currentID = id;
 		noInterrupts();
 		if ( clkPin == 3 )
-			ky040::params_0 = currentRotaryParams;
-		else // add if ( clkPin == 3 )
-			ky040::params_1 = currentRotaryParams;
-		// else if ( clkPin == XX )
-		//	ky040::params_XX = currentRotaryParams
-		// etc
+			ky040::params_3 = currentRotaryParams;
+		else // if ( clkPin == 3 )
+			ky040::params_2 = currentRotaryParams;
+		/* else if ( clkPin == XX )
+		 *	ky040::params_XX = currentRotaryParams
+		 * etc...
+		 */
 		interrupts();
 		return true;
 	}
@@ -223,8 +213,8 @@ bool ky040 :: SwitchPressed ( void ) {
 	}
 	return false;
 }
-
-/*-private function 
+ 
+/* private function 
  * Find the parameter block for the requested id.
  */
 bool ky040 :: GetParamsFromID ( uint8_t id ) {
@@ -243,31 +233,35 @@ bool ky040 :: GetParamsFromID ( uint8_t id ) {
  * that may be connected to the Arduino. To add more encoders, declare
  * more interrupt routines and tie then to the appropriate data.
  */
-void ky040 :: RotaryClkInterruptOn_0 ( void ) {
-	ky040::UpdateRotaryCount(ky040::dtPin_0,ky040::params_0);
+void ky040 :: RotaryClkInterruptOn_3 ( void ) {
+	ky040::UpdateRotaryCount(ky040::dtPin_3,ky040::params_3);
 }
 
-void ky040 :: RotaryClkInterruptOn_1 ( void ) {
-	ky040::UpdateRotaryCount(ky040::dtPin_1,ky040::params_1);
+void ky040 :: RotaryClkInterruptOn_2 ( void ) {
+	ky040::UpdateRotaryCount(ky040::dtPin_2,ky040::params_2);
 }
-// Declare more RotaryClkInterruptOn_XX functions -
-//void ky040 :: RotaryClkInterruptOn_XX ( void ) {
-//	ky040::UpdateRotaryCount(ky040::dtPin_XX,ky040::params_XX);
-//}
+/* Declare more RotaryClkInterruptOn_XX functions e.g.
+ *
+ * void ky040 :: RotaryClkInterruptOn_XX ( void ) {
+ * 	  ky040::UpdateRotaryCount(ky040::dtPin_XX,ky040::params_XX);
+ * }
+ */
 
 /*
  * Generic procedure to increment/decrement the rotary counter
  */
 void ky040 :: UpdateRotaryCount ( uint8_t pin, volatile encoderParams * params ) {
-	// TODO: Add an acceleration test. Store time, then at each interrupt
-	// check interval from last interrupt, if smaller than TBD msec,
-	// increase increment (multiply by 2, 4, 8?). How to handle rollover
-	// is one problem that I need to think about. 
+	/* TODO: Add an acceleration test. Store time, then at each interrupt
+	 * check interval from last interrupt, if smaller than TBD msec,
+	 * increase increment (multiply by 2, 4, 8?). How to handle rollover
+	 * is one problem that I need to think about.
+	 */
 	params->changed = true;
-	// TODO: Could use a direct port read here.... save some time.
-	// TODO: Could just increment / decrement a counter. The actual value
-	// could then be calculated in the GetRotaryValue function. This I
-	// have to think about a bit more.
+	/* TODO: Could use a direct port read here.... save some time.
+	 * TODO: Could just increment / decrement a counter. The actual value
+	 * could then be calculated in the GetRotaryValue function. This I
+	 * have to think about a bit more.
+	 */
 	if ( digitalRead(pin) == HIGH ) {
 		params->currentVal += params->inc;
 		if ( params->currentVal > params->maxVal ) {

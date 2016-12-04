@@ -48,8 +48,6 @@ public:
 	
 	ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin,
 			uint8_t maxRotarys = 1 );
-
-	~ ky040 ( );
 	
 	bool AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
 			int16_t maxVal, int16_t inc = 1, bool rollOver = true);
@@ -67,7 +65,7 @@ public:
 	bool IsActive ( uint8_t id );
 
 	bool SwitchPressed ( void );
-	
+
 private:
 	
 	uint8_t	maxRotaries = 0,	// maximum allowed rotaries
@@ -85,11 +83,11 @@ private:
  * To add more encoders, define more params_X, dtPin_X and
  * interrupt handlers RotaryClkInterruptOn_X
  */
-	static volatile encoderParams * params_0, *params_1;
-	static uint8_t dtPin_0;
-	static uint8_t dtPin_1;
-	static void RotaryClkInterruptOn_0 ( void );
-	static void RotaryClkInterruptOn_1 ( void );
+	static volatile encoderParams * params_2, *params_3;
+	static uint8_t dtPin_2;
+	static uint8_t dtPin_3;
+	static void RotaryClkInterruptOn_2 ( void );
+	static void RotaryClkInterruptOn_3 ( void );
 	static void UpdateRotaryCount ( uint8_t pin, volatile encoderParams * params );
 	
 };
