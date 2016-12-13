@@ -19,5 +19,9 @@ GetRotaryValue	KEYWORD2
 SetMaxValueOnRotary	KEYWORD2
 IsActive	KEYWORD2
 SwitchPressed	KEYWORD2
-CURRENT_ID	KEYWORD2
+
+#######################################
+# Literals
+#######################################
+CURRENT_ID	LITERAL1
 
