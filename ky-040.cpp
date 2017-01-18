@@ -3,10 +3,8 @@
  *
  * Copyright 2016 Bill Williams <wlwilliams1952@gmail.com, github/Billwilliams1952>
  *
- * Library to interface with the KY-040 rotary encoder.
- *
- * The current code only support interrupts on pins 2 and 3. The code
- * has comments if more interrupt pins are needed.
+ * Library to interface with the KY-040 rotary encoder. This library
+ * supports the Arduino Uno, Pro, Mini, Nano, Micro, Leonardo, and Mega.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,23 +25,46 @@
 #include "ky-040.h"
 
 /*
- * The interrupt parameters. This library currently only supports up to
- * two encoders - one on pin 3 and one on pin 2.
- * See code comments for suggestions on how to add additional interrupts.
+ * The interrupt parameters. Default is the two interrupts on pins 2 and 3
+ * #defines are used to identify the unique Arduino board.
+ * Arduino Uno, Nano, Duemilanove, Mini only have two interrupt pins
+ * Basically anything based off the ATmega328P or ATmega168
  */
 
-volatile encoderParams * ky040 :: params_3;
 volatile encoderParams * ky040 :: params_2;
-uint8_t ky040 :: dtPin_3 = 0;		// initalize to invalid pins
-uint8_t ky040 :: dtPin_2 = 0;		// initalize to invalid pins
+volatile encoderParams * ky040 :: params_3;
 
-/* More could be added, just requires more params_XX and dtPin_XX
- * definitions.... edits to the header file to define the additional
- * variables. e.g.
- * 
- * volatile encoderParams * ky040 :: params_X;
- * uint8_t ky040 :: dtPin_X = 0;	// initialize to invalid pins
+uint8_t ky040 :: dtPin_2 = 0;		// initalize to invalid pins
+uint8_t ky040 :: dtPin_3 = 0;		// initalize to invalid pins
+
+/*
+ * Arduino Mega
  */
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+	// Added: 18 (interrupt 5), 19 (interrupt 4), 20 (interrupt 3),
+	// and 21 (interrupt 2).
+	volatile encoderParams * ky040 :: params_18;
+	volatile encoderParams * ky040 :: params_19;
+	volatile encoderParams * ky040 :: params_20;
+	volatile encoderParams * ky040 :: params_21;
+	uint8_t ky040 :: dtPin_18 = 0;		// initalize to invalid pins
+	uint8_t ky040 :: dtPin_19 = 0;		// initalize to invalid pins
+	uint8_t ky040 :: dtPin_20 = 0;		// initalize to invalid pins
+	uint8_t ky040 :: dtPin_21 = 0;		// initalize to invalid pins
+#endif
+
+/*
+ * Arduino Leonardo, Micro
+ */
+#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)
+	// Added: 0 (interrupt 2), 1 (interrupt 3) and 7 (interrupt 4)
+	volatile encoderParams * ky040 :: params_0;
+	volatile encoderParams * ky040 :: params_1;
+	volatile encoderParams * ky040 :: params_7;
+	uint8_t ky040 :: dtPin_0 = 0;		// initalize to invalid pins
+	uint8_t ky040 :: dtPin_1 = 0;		// initalize to invalid pins
+	uint8_t ky040 :: dtPin_7 = 0;		// initalize to invalid pins
+#endif
 
 /*
  * Encoder object creation. We don't attach the interrupt procedure here
@@ -57,9 +78,23 @@ uint8_t ky040 :: dtPin_2 = 0;		// initalize to invalid pins
  */
 ky040 :: ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin,
 				 uint8_t maxRotarys ) {
-	/* Add more checks here to add more interrupts */
+	/* Checks for valid interrupt pin */
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
 	if ( (interruptClkPin != 2) && (interruptClkPin != 3) )
 		return;			// Wrong interrupt pins, error
+#endif
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+	if ( (interruptClkPin != 2) && (interruptClkPin != 3) &&
+		 (interruptClkPin != 18) && (interruptClkPin != 19) &&
+		 (interruptClkPin != 20) && (interruptClkPin != 21) )
+		return;			// Wrong interrupt pins, error
+#endif
+#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)
+	if ( (interruptClkPin != 2) && (interruptClkPin != 3) &&
+		 (interruptClkPin != 0) && (interruptClkPin != 1) &&
+		 (interruptClkPin != 7) )
+		return;			// Wrong interrupt pins, error
+#endif
 	params = (encoderParams *) malloc(maxRotarys * sizeof(encoderParams));
 	if ( params == 0 )	// Major malloc error
 		return;
@@ -109,19 +144,55 @@ bool ky040 :: AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
 			attachInterrupt(digitalPinToInterrupt(clkPin),
 				ky040::RotaryClkInterruptOn_3, FALLING);
 		}
-		/* Add more checks whether the interrupt procedure has been
-		 * attached or not. e.g.
-		 * 
-		 * else if ( (clkPin == XX) && (ky040::dtPin_XX == 0) ) {
-		 *		ky040::dtPin_XX = dtPin;
-		 *		attachInterrupt(digitalPinToInterrupt(XX),
-		 * 			ky040::RotaryClkInterruptOn_XX, FALLING);
-		 * }
-		 * Etc for more interrupts
-		 */
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+		else if ( (clkPin == 18) && (ky040::dtPin_18 == 0) ) {
+			ky040::dtPin_18 = dtPin;
+			attachInterrupt(digitalPinToInterrupt(clkPin),
+				ky040::RotaryClkInterruptOn_18, FALLING);
+		}
+		else if ( (clkPin == 19) && (ky040::dtPin_19 == 0) ) {
+			ky040::dtPin_19 = dtPin;
+			attachInterrupt(digitalPinToInterrupt(clkPin),
+				ky040::RotaryClkInterruptOn_19, FALLING);
+		}
+		else if ( (clkPin == 20) && (ky040::dtPin_20 == 0) ) {
+			ky040::dtPin_20 = dtPin;
+			attachInterrupt(digitalPinToInterrupt(clkPin),
+				ky040::RotaryClkInterruptOn_20, FALLING);
+		}
+		else if ( (clkPin == 21) && (ky040::dtPin_21 == 0) ) {
+			ky040::dtPin_21 = dtPin;
+			attachInterrupt(digitalPinToInterrupt(clkPin),
+				ky040::RotaryClkInterruptOn_21, FALLING);
+		}
+#endif
+#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)
+		else if ( (clkPin == 0) && (ky040::dtPin_0 == 0) ) {
+			ky040::dtPin_0 = dtPin;
+			attachInterrupt(digitalPinToInterrupt(clkPin),
+				ky040::RotaryClkInterruptOn_0, FALLING);
+		}
+		else if ( (clkPin == 1) && (ky040::dtPin_1 == 0) ) {
+			ky040::dtPin_1 = dtPin;
+			attachInterrupt(digitalPinToInterrupt(clkPin),
+				ky040::RotaryClkInterruptOn_1, FALLING);
+		}
+		else if ( (clkPin == 7) && (ky040::dtPin_7 == 0) ) {
+			ky040::dtPin_7 = dtPin;
+			attachInterrupt(digitalPinToInterrupt(clkPin),
+				ky040::RotaryClkInterruptOn_7, FALLING);
+		}
+#endif
 		return true;
 	}
 	return false;		// Add failed.
+}
+
+/*
+ * Simple call if a zero based rotary is all that is required
+ */
+bool ky040 :: AddRotaryCounter(uint8_t id, int16_t maxVal, bool rollOver ) {
+	return AddRotaryCounter(id, 0, 0, maxVal, 1, rollOver );
 }
 
 /*
@@ -134,12 +205,27 @@ bool ky040 :: SetRotary ( uint8_t id ) {
 		noInterrupts();
 		if ( clkPin == 3 )
 			ky040::params_3 = currentRotaryParams;
-		else // if ( clkPin == 3 )
+		else if ( clkPin == 2 )
 			ky040::params_2 = currentRotaryParams;
-		/* else if ( clkPin == XX )
-		 *	ky040::params_XX = currentRotaryParams
-		 * etc...
-		 */
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+		else if ( clkPin == 18 )
+			ky040::params_18 = currentRotaryParams;
+		else if ( clkPin == 19 )
+			ky040::params_19 = currentRotaryParams;
+		else if ( clkPin == 20 )
+			ky040::params_20 = currentRotaryParams;
+		else if ( clkPin == 21 )
+			ky040::params_21 = currentRotaryParams;
+#endif
+#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)
+	// 3 (interrupt 0), 2 (interrupt 1), 0 (interrupt 2), 1 (interrupt 3) and 7 (interrupt 4)
+		else if ( clkPin == 0 )
+			ky040::params_0 = currentRotaryParams;
+		else if ( clkPin == 1 )
+			ky040::params_1 = currentRotaryParams;
+		else if ( clkPin == 7 )
+			ky040::params_7 = currentRotaryParams;
+#endif
 		interrupts();
 		return true;
 	}
@@ -240,12 +326,38 @@ void ky040 :: RotaryClkInterruptOn_3 ( void ) {
 void ky040 :: RotaryClkInterruptOn_2 ( void ) {
 	ky040::UpdateRotaryCount(ky040::dtPin_2,ky040::params_2);
 }
-/* Declare more RotaryClkInterruptOn_XX functions e.g.
- *
- * void ky040 :: RotaryClkInterruptOn_XX ( void ) {
- * 	  ky040::UpdateRotaryCount(ky040::dtPin_XX,ky040::params_XX);
- * }
- */
+
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+	void ky040 :: RotaryClkInterruptOn_18 ( void ) {
+		ky040::UpdateRotaryCount(ky040::dtPin_18,ky040::params_18);
+	}
+
+	void ky040 :: RotaryClkInterruptOn_19 ( void ) {
+		ky040::UpdateRotaryCount(ky040::dtPin_19,ky040::params_19);
+	}
+
+	void ky040 :: RotaryClkInterruptOn_20 ( void ) {
+		ky040::UpdateRotaryCount(ky040::dtPin_20,ky040::params_20);
+	}
+
+	void ky040 :: RotaryClkInterruptOn_21 ( void ) {
+		ky040::UpdateRotaryCount(ky040::dtPin_21,ky040::params_21);
+	}
+#endif
+
+#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)
+	void ky040 :: RotaryClkInterruptOn_0 ( void ) {
+		ky040::UpdateRotaryCount(ky040::dtPin_0,ky040::params_0);
+	}
+
+	void ky040 :: RotaryClkInterruptOn_1 ( void ) {
+		ky040::UpdateRotaryCount(ky040::dtPin_1,ky040::params_1);
+	}
+
+	void ky040 :: RotaryClkInterruptOn_7 ( void ) {
+		ky040::UpdateRotaryCount(ky040::dtPin_7,ky040::params_7);
+	}
+#endif
 
 /*
  * Generic procedure to increment/decrement the rotary counter
