@@ -3,7 +3,7 @@
 ## Synopsis
 Arduino library for the KY-040 Encoder. 
 
-This library allows the user to connect one or more encoders to any of the interrupt pins supported by your board. The user may then add rotaries that will each keep track of the encoder movement while active. Each rotary is initialized with the rotary ID (a byte value between 0 - 254), an initial integer value, and integer values for minimum, maximum, and increment. Also a boolean rollover flag controls whether the current rotary value wraps from min to max or max to min. If more encoders are needed, the source code provides comments showing what edits would be needed.
+This library allows the user to connect one or more encoders to any of the interrupt pins supported by your board. The user may then add rotaries that will each keep track of the encoder movement while active. Each rotary is initialized with the rotary ID (a byte value between 0 - 254), an initial integer value, and integer values for minimum, maximum, and increment. Also a boolean rollover flag controls whether the current rotary value wraps from min to max or max to min.
 
 Note, memory for the total number of rotaries for an encoder is allocated during object creation. If you attempt to add a rotary using **AddRotaryCounter** that exceeds the limit set during object creation, the function will return **false**.
 
