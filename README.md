@@ -39,7 +39,7 @@ Download the ZIP file and extract into your **sketchbook/libraries** directory. 
 	// Make rotary number 'id' the active one - responding to user inputs.
 	bool SetRotary ( uint8_t id );
 
-	// True if rotary number 'id' values has changed.
+	// True if rotary number 'id' value has changed.
 	bool HasRotaryValueChanged ( uint8_t id = CURRENT_ID );
 
 	// Force a changed status for rotary number 'id'.
@@ -54,7 +54,7 @@ Download the ZIP file and extract into your **sketchbook/libraries** directory. 
 	// True if rotary number 'id' is the active one.
 	bool IsActive ( uint8_t id );
 
-	// True if the dwitch associated with the encoder is pressed.
+	// True if the switch associated with the encoder is pressed.
 	bool SwitchPressed ( void );
 
 This program uses the Arduino API (**Arduino.h**) and **stdlib.h**; no other special libraries are required. It has been tested on the Arduino Micro.
