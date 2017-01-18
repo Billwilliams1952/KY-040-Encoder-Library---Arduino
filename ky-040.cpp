@@ -61,7 +61,7 @@ uint8_t ky040 :: dtPin_3 = 0;		// initalize to invalid pins
 	volatile encoderParams * ky040 :: params_0;
 	volatile encoderParams * ky040 :: params_1;
 	volatile encoderParams * ky040 :: params_7;
-	uint8_t ky040 :: dtPin_0 = 0;		// initalize to invalid pins
+	uint8_t ky040 :: dtPin_0 = 255;		// initalize to invalid pins
 	uint8_t ky040 :: dtPin_1 = 0;		// initalize to invalid pins
 	uint8_t ky040 :: dtPin_7 = 0;		// initalize to invalid pins
 #endif
@@ -167,7 +167,7 @@ bool ky040 :: AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
 		}
 #endif
 #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)
-		else if ( (clkPin == 0) && (ky040::dtPin_0 == 0) ) {
+		else if ( (clkPin == 0) && (ky040::dtPin_0 == 255) ) {
 			ky040::dtPin_0 = dtPin;
 			attachInterrupt(digitalPinToInterrupt(clkPin),
 				ky040::RotaryClkInterruptOn_0, FALLING);
