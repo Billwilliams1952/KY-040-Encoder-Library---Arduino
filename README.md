@@ -3,7 +3,7 @@
 ## Synopsis
 Arduino library for the KY-040 Encoder. 
 
-This library allows the user to connect up to two encoders using interrupts 0 (pin D3) and interrupt 1 (pin D2). The user may then add rotaries that will each keep track of the encoder movement while active. Each rotary is initialized with the rotary ID (a byte value between 0 - 254), an initial integer value, and integer values for minimum, maximum, and increment. Also a boolean rollover flag controls whether the current rotary value wraps from min to max or max to min. If more encoders are needed, the source code provides comments showing what edits would be needed.
+This library allows the user to connect one or more encoders to any of the interrupt pins supported by your board. The user may then add rotaries that will each keep track of the encoder movement while active. Each rotary is initialized with the rotary ID (a byte value between 0 - 254), an initial integer value, and integer values for minimum, maximum, and increment. Also a boolean rollover flag controls whether the current rotary value wraps from min to max or max to min. If more encoders are needed, the source code provides comments showing what edits would be needed.
 
 Note, memory for the total number of rotaries for an encoder is allocated during object creation. If you attempt to add a rotary using **AddRotaryCounter** that exceeds the limit set during object creation, the function will return **false**.
 
@@ -29,21 +29,32 @@ Download the ZIP file and extract into your **sketchbook/libraries** directory. 
 	ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin,
 			uint8_t maxRotarys = 1 );
 	
+	// Create a rotary counter specifying all parameters.
 	bool AddRotaryCounter ( uint8_t id, int16_t currentVal, int16_t minVal,
 			int16_t maxVal, int16_t inc = 1, bool rollOver = true );
+			
+	// Support simple rotary counters from 0 to maxVal.
+	bool AddRotaryCounter ( uint8_t id, int16_t maxVal, bool rollOver = false );
 	
+	// Make rotary number 'id' the active one - responding to user inputs.
 	bool SetRotary ( uint8_t id );
 
+	// True if rotary number 'id' values has changed.
 	bool HasRotaryValueChanged ( uint8_t id = CURRENT_ID );
 
+	// Force a changed status for rotary number 'id'.
 	void SetChanged ( uint8_t id = CURRENT_ID );
 	
+	// Get the current rotary value for roatary number 'id'. After this call, HasRotaryValueChanged returns false.
 	int16_t GetRotaryValue ( uint8_t id = CURRENT_ID );
 
+	// Change the maximum allowed value on rotary number 'id'.
 	void SetMaxValueOnRotary ( int16_t maxVal, uint8_t id = CURRENT_ID );
 
+	// True if rotary number 'id' is the active one.
 	bool IsActive ( uint8_t id );
 
+	// True if the dwitch associated with the encoder is pressed.
 	bool SwitchPressed ( void );
 
 This program uses the Arduino API (**Arduino.h**) and **stdlib.h**; no other special libraries are required. It has been tested on the Arduino Micro.
