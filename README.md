@@ -9,6 +9,13 @@ Note, memory for the total number of rotaries for an encoder is allocated during
 
 The KY-040 encoder library uses interrupts on the clock line. Because of switch bounces, a 470 nF (0.47 uF) capacitor is required on each encoder clock (**CLK**) pin to ground.
 
+Recent bug fixes and modifications:
+
+| Date | Changes |
+| ---- | ------- |
+| 1/20/2017 | Finalized support for multiple Arduino board types |
+| Same | Bug fixed - when clkPin not correct, all functions should gracefully fail. |
+
 Some information on the encoder may be found at 
 http://henrysbench.capnfatz.com/henrys-bench/arduino-sensors-and-input/keyes-ky-040-arduino-rotary-encoder-user-manual/
 
