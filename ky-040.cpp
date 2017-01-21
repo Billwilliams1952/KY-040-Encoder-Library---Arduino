@@ -79,6 +79,7 @@ uint8_t ky040 :: dtPin_3 = 0;		// initalize to invalid pins
 ky040 :: ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin,
 				 uint8_t maxRotarys ) {
 	/* Checks for valid interrupt pin */
+	params = 0;		// null until valid clock pin specified and then malloc'd
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
 	if ( (interruptClkPin != 2) && (interruptClkPin != 3) )
 		return;			// Wrong interrupt pins, error
@@ -101,11 +102,11 @@ ky040 :: ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin,
 	maxRotaries = maxRotarys;
 	// TODO: Check on validity of pins?
 	swPin = switchPin;
-	pinMode(swPin,INPUT_PULLUP);
+	pinMode(swPin,INPUT_PULLUP);	// TODO: Do we need pullups? CHECK
 	clkPin = interruptClkPin;
-	pinMode(clkPin,INPUT_PULLUP);
+	pinMode(clkPin,INPUT_PULLUP);	// TODO: Do we need pullups? CHECK
 	this->dtPin = dtPin;
-	pinMode(dtPin,INPUT_PULLUP);
+	pinMode(dtPin,INPUT_PULLUP);	// TODO: Do we need pullups? CHECK
 }
 
 /*
@@ -117,7 +118,7 @@ ky040 :: ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin,
  */
 bool ky040 :: AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
 							   int16_t maxVal, int16_t inc, bool rollOver ) {
-	if ( (id != CURRENT_ID) && !GetParamsFromID(id) && (numRotaries < maxRotaries) ) {
+	if ( (params != 0) && (id != CURRENT_ID) && !GetParamsFromID(id) && (numRotaries < maxRotaries) ) {
 		params[numRotaries].id = id;
 		params[numRotaries].currentVal = currentVal;
 		params[numRotaries].minVal = minVal;
@@ -135,6 +136,7 @@ bool ky040 :: AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
 			 * With pullups enabled, there is a slow risetime (helping with
 			 * debounce), while the high to low transition occurs quickly,
 			 * into a low impedance - improving interrupt response time.
+			 * TODO: Check if defining INPUT_PULLUP is required.
 			 */ 
 			attachInterrupt(digitalPinToInterrupt(clkPin),
 				ky040::RotaryClkInterruptOn_2, FALLING);
@@ -304,11 +306,13 @@ bool ky040 :: SwitchPressed ( void ) {
  * Find the parameter block for the requested id.
  */
 bool ky040 :: GetParamsFromID ( uint8_t id ) {
-	if ( id == CURRENT_ID ) id = currentID;
-	for ( uint8_t i = 0; i < numRotaries; i++ ) {
-		if ( id == params[i].id )	{
-			currentRotaryParams = &params[i];
-			return true;
+	if ( params != 0 )	{
+		if ( id == CURRENT_ID ) id = currentID;
+		for ( uint8_t i = 0; i < numRotaries; i++ ) {
+			if ( id == params[i].id )	{
+				currentRotaryParams = &params[i];
+				return true;
+			}
 		}
 	}
 	return false;
