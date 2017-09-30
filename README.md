@@ -19,11 +19,11 @@ Recent bug fixes and modifications:
 Some information on the encoder may be found at 
 http://henrysbench.capnfatz.com/henrys-bench/arduino-sensors-and-input/keyes-ky-040-arduino-rotary-encoder-user-manual/
 
-<center>**Switch Bounce on Clock (interrupt) line (top trace)**</center>
+**Switch Bounce on Clock (interrupt) line (top trace)**
 
 ![alt tag](https://cloud.githubusercontent.com/assets/3778024/20508566/0f773998-b028-11e6-93be-419c9a08014c.png)
 
-<center>**0.47 uF capacitor connected between CLK line and ground**</center>
+**0.47 uF capacitor connected between CLK line and ground**
 
 ![alt tag](https://cloud.githubusercontent.com/assets/3778024/20508570/1a946d00-b028-11e6-8b36-ff34b561c11a.png)
 
