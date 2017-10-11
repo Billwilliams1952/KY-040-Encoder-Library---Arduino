@@ -13,6 +13,7 @@ Recent bug fixes and modifications:
 
 | Date | Changes |
 | ---- | ------- |
+| 10/11/2017 | Example program now supports up to four encoders. Tested on an Arduino Micro. |
 | 1/20/2017 | Finalized support for multiple Arduino board types |
 | Same | Bug fixed - when clkPin not correct, all functions should gracefully fail. |
 
