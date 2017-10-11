@@ -32,7 +32,16 @@
 #include "Arduino.h"
 #include <stdlib.h>			// malloc call
 
-#define CURRENT_ID		255
+#define CURRENT_ID		255	// Only ID you cannot declare
+
+/*
+ * !!! DON'T DEFINE THIS UNLESS YOU'VE COMPLETELY DEBUGGED YOUR CODE !!!
+ * Almost all runtime sanity checks are removed.  I added this for those
+ * who may run low on program memory. You'll have to modify your Arduino
+ * code to remove some return checking or you'll get compile errors.
+ */
+//#define	SMALLEST_CODESIZE
+
 
 typedef struct encoderP {
 	uint8_t id;
@@ -49,13 +58,22 @@ public:
 	
 	ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin,
 			uint8_t maxRotarys = 1 );
-	
+
+#if !defined ( SMALLEST_CODESIZE )
 	bool AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
 			int16_t maxVal, int16_t inc = 1, bool rollOver = true);
 
 	bool AddRotaryCounter(uint8_t id, int16_t maxVal, bool rollOver = false );
-	
+
 	bool SetRotary ( uint8_t id );
+#else // Minimize code size - remove most sanity / error checking
+	void AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
+			int16_t maxVal, int16_t inc = 1, bool rollOver = true);
+
+	void AddRotaryCounter(uint8_t id, int16_t maxVal, bool rollOver = false );
+
+	void SetRotary ( uint8_t id );
+#endif
 
 	bool HasRotaryValueChanged ( uint8_t id = CURRENT_ID );
 
@@ -80,12 +98,17 @@ private:
 		
 	encoderParams *params;
 	volatile encoderParams *currentRotaryParams;
+#if !defined ( SMALLEST_CODESIZE )
 	bool GetParamsFromID ( uint8_t id );
+#else
+	void GetParamsFromID ( uint8_t id );
+#endif
 
 	static volatile encoderParams * params_2, *params_3;
 	static uint8_t dtPin_2, dtPin_3;
 	static void RotaryClkInterruptOn_2 ( void );
 	static void RotaryClkInterruptOn_3 ( void );
+	
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 	static volatile encoderParams *params_18, *params_19, *params_20,
 								  *params_21;
@@ -95,6 +118,7 @@ private:
 	static void RotaryClkInterruptOn_20 ( void );
 	static void RotaryClkInterruptOn_21 ( void );
 #endif
+
 #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)
 	static volatile encoderParams *params_0, *params_1, *params_7;
 	static uint8_t dtPin_0, dtPin_1, dtPin_7;
@@ -102,8 +126,8 @@ private:
 	static void RotaryClkInterruptOn_1 ( void );
 	static void RotaryClkInterruptOn_7 ( void );
 #endif
+
 	static void UpdateRotaryCount ( uint8_t pin, volatile encoderParams * params );
-	
 };
 
-#endif
+#endif // ifndef __KY040__

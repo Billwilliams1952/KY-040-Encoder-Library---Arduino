@@ -27,7 +27,8 @@
 /*
  * The interrupt parameters. Default is the two interrupts on pins 2 and 3
  * #defines are used to identify the unique Arduino board.
- * Arduino Uno, Nano, Duemilanove, Mini only have two interrupt pins
+ * Arduino Uno, Nano, Duemilanove, Mini, Ethernet, BT, only have two
+ * interrupt pins.
  * Basically anything based off the ATmega328P or ATmega168
  */
 
@@ -38,7 +39,7 @@ uint8_t ky040 :: dtPin_2 = 0;		// initalize to invalid pins
 uint8_t ky040 :: dtPin_3 = 0;		// initalize to invalid pins
 
 /*
- * Arduino Mega
+ * Arduino Mega, Mega ADK
  */
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 	// Added: 18 (interrupt 5), 19 (interrupt 4), 20 (interrupt 3),
@@ -54,7 +55,7 @@ uint8_t ky040 :: dtPin_3 = 0;		// initalize to invalid pins
 #endif
 
 /*
- * Arduino Leonardo, Micro
+ * Arduino Leonardo, Leonardo ETH, Micro
  */
 #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)
 	// Added: 0 (interrupt 2), 1 (interrupt 3) and 7 (interrupt 4)
@@ -69,7 +70,7 @@ uint8_t ky040 :: dtPin_3 = 0;		// initalize to invalid pins
 /*
  * Encoder object creation. We don't attach the interrupt procedure here
  * because no rotaries have been added. Some sanity checks on valid
- * parameters.
+ * parameters if compiled in.
  *
  * I decided to force the user to define the number of rotaries at object
  * creation to ensure there is enough memory. I didn't want to get into
@@ -116,9 +117,19 @@ ky040 :: ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin,
  * Once the rotary is initialized, if it is the first rotary then the actual
  * interrupt procedure is attached.
  */
+
+#if !defined ( SMALLEST_CODESIZE )
 bool ky040 :: AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
 							   int16_t maxVal, int16_t inc, bool rollOver ) {
 	if ( (params != 0) && (id != CURRENT_ID) && !GetParamsFromID(id) && (numRotaries < maxRotaries) ) {
+#else
+void ky040 :: AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
+							   int16_t maxVal, int16_t inc, bool rollOver ) {
+#endif
+		static void (*handler)(void);
+		uint8_t interruptNumber = digitalPinToInterrupt(clkPin);
+		handler = 0;
+		
 		params[numRotaries].id = id;
 		params[numRotaries].currentVal = currentVal;
 		params[numRotaries].minVal = minVal;
@@ -127,88 +138,95 @@ bool ky040 :: AddRotaryCounter(uint8_t id, int16_t currentVal, int16_t minVal,
 		params[numRotaries].rollOver = rollOver;
 		params[numRotaries].changed = false;
 		numRotaries++;
+		
 		SetRotary(id);		// Make this one active
+		
 		// Has the interrupt procedure been attached yet?
 		if ( (clkPin == 2) && (ky040::dtPin_2 == 0) ) {
 			ky040::dtPin_2 = dtPin;
-			/* The reason we are using the FALLING edge is because of the
-			 * 0.47uF capacitor connected from the interrupt pin to ground.
-			 * With pullups enabled, there is a slow risetime (helping with
-			 * debounce), while the high to low transition occurs quickly,
-			 * into a low impedance - improving interrupt response time.
-			 * TODO: Check if defining INPUT_PULLUP is required.
-			 */ 
-			attachInterrupt(digitalPinToInterrupt(clkPin),
-				ky040::RotaryClkInterruptOn_2, FALLING);
+			handler = &ky040::RotaryClkInterruptOn_2;
 		}
 		else if ( (clkPin == 3) && (ky040::dtPin_3 == 0) ) {
 			ky040::dtPin_3 = dtPin;
-			attachInterrupt(digitalPinToInterrupt(clkPin),
-				ky040::RotaryClkInterruptOn_3, FALLING);
+			handler = &ky040::RotaryClkInterruptOn_3;
 		}
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 		else if ( (clkPin == 18) && (ky040::dtPin_18 == 0) ) {
 			ky040::dtPin_18 = dtPin;
-			attachInterrupt(digitalPinToInterrupt(clkPin),
-				ky040::RotaryClkInterruptOn_18, FALLING);
+			handler = &ky040::RotaryClkInterruptOn_18;
 		}
 		else if ( (clkPin == 19) && (ky040::dtPin_19 == 0) ) {
 			ky040::dtPin_19 = dtPin;
-			attachInterrupt(digitalPinToInterrupt(clkPin),
-				ky040::RotaryClkInterruptOn_19, FALLING);
+			handler = &ky040::RotaryClkInterruptOn_19;
 		}
 		else if ( (clkPin == 20) && (ky040::dtPin_20 == 0) ) {
 			ky040::dtPin_20 = dtPin;
-			attachInterrupt(digitalPinToInterrupt(clkPin),
-				ky040::RotaryClkInterruptOn_20, FALLING);
+			handler = &ky040::RotaryClkInterruptOn_20;
 		}
 		else if ( (clkPin == 21) && (ky040::dtPin_21 == 0) ) {
 			ky040::dtPin_21 = dtPin;
-			attachInterrupt(digitalPinToInterrupt(clkPin),
-				ky040::RotaryClkInterruptOn_21, FALLING);
+			handler = &ky040::RotaryClkInterruptOn_21;
 		}
 #endif
 #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)
 		else if ( (clkPin == 0) && (ky040::dtPin_0 == 255) ) {
 			ky040::dtPin_0 = dtPin;
-			attachInterrupt(digitalPinToInterrupt(clkPin),
-				ky040::RotaryClkInterruptOn_0, FALLING);
+			handler = &ky040::RotaryClkInterruptOn_0;
 		}
 		else if ( (clkPin == 1) && (ky040::dtPin_1 == 0) ) {
 			ky040::dtPin_1 = dtPin;
-			attachInterrupt(digitalPinToInterrupt(clkPin),
-				ky040::RotaryClkInterruptOn_1, FALLING);
+			handler = &ky040::RotaryClkInterruptOn_1;
 		}
 		else if ( (clkPin == 7) && (ky040::dtPin_7 == 0) ) {
 			ky040::dtPin_7 = dtPin;
-			attachInterrupt(digitalPinToInterrupt(clkPin),
-				ky040::RotaryClkInterruptOn_7, FALLING);
+			handler = &ky040::RotaryClkInterruptOn_7;
 		}
 #endif
+		/* The reason we are using the FALLING edge is because of the
+		 * 0.47uF capacitor connected from the interrupt pin to ground.
+		 * With pullups enabled, there is a slow risetime (helping with
+		 * debounce), while the high to low transition occurs quickly,
+		 * into a low impedance - improving interrupt response time.
+		 * TODO: Check if defining INPUT_PULLUP is required.
+		*/
+		if ( handler != 0 )
+			attachInterrupt(interruptNumber,handler,FALLING);
+#if !defined ( SMALLEST_CODESIZE )
 		return true;
 	}
 	return false;		// Add failed.
+#endif
 }
 
 /*
  * Simple call if a zero based rotary is all that is required
  */
+#if !defined ( SMALLEST_CODESIZE )
 bool ky040 :: AddRotaryCounter(uint8_t id, int16_t maxVal, bool rollOver ) {
 	return AddRotaryCounter(id, 0, 0, maxVal, 1, rollOver );
+#else
+void ky040 :: AddRotaryCounter(uint8_t id, int16_t maxVal, bool rollOver ) {
+	AddRotaryCounter(id, 0, 0, maxVal, 1, rollOver );
+#endif
 }
 
 /*
  * Make the requested rotary id the current one.
  */
+#if !defined ( SMALLEST_CODESIZE )
 bool ky040 :: SetRotary ( uint8_t id ) {
 	if ( GetParamsFromID ( id ) ) {
+#else
+void ky040 :: SetRotary ( uint8_t id ) {
+		GetParamsFromID ( id );
+#endif
 		/* Assign correct structure to the appropriate interrupt */
 		currentID = id;
 		noInterrupts();
-		if ( clkPin == 3 )
-			ky040::params_3 = currentRotaryParams;
-		else if ( clkPin == 2 )
+		if ( clkPin == 2 )
 			ky040::params_2 = currentRotaryParams;
+		else if ( clkPin == 3 )
+			ky040::params_3 = currentRotaryParams;
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 		else if ( clkPin == 18 )
 			ky040::params_18 = currentRotaryParams;
@@ -220,7 +238,6 @@ bool ky040 :: SetRotary ( uint8_t id ) {
 			ky040::params_21 = currentRotaryParams;
 #endif
 #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)
-	// 3 (interrupt 0), 2 (interrupt 1), 0 (interrupt 2), 1 (interrupt 3) and 7 (interrupt 4)
 		else if ( clkPin == 0 )
 			ky040::params_0 = currentRotaryParams;
 		else if ( clkPin == 1 )
@@ -229,9 +246,11 @@ bool ky040 :: SetRotary ( uint8_t id ) {
 			ky040::params_7 = currentRotaryParams;
 #endif
 		interrupts();
+#if !defined ( SMALLEST_CODESIZE )
 		return true;
 	}
 	return false;
+#endif
 }
 
 /*
@@ -240,12 +259,18 @@ bool ky040 :: SetRotary ( uint8_t id ) {
  */
 bool ky040 :: HasRotaryValueChanged ( uint8_t id ) {
 	bool changed = false;
+#if !defined ( SMALLEST_CODESIZE )
 	if ( GetParamsFromID ( id ) ) {
+#else
+		GetParamsFromID ( id );
+#endif
 		noInterrupts();
 		changed = currentRotaryParams->changed;
 		currentRotaryParams->changed = false;
 		interrupts();
+#if !defined ( SMALLEST_CODESIZE )
 	}
+#endif
 	return changed;
 }
 
@@ -255,29 +280,48 @@ bool ky040 :: HasRotaryValueChanged ( uint8_t id ) {
  * would this be needed?
  */
 void ky040 :: SetMaxValueOnRotary ( int16_t maxVal, uint8_t id ) {
+#if !defined ( SMALLEST_CODESIZE )
 	if ( GetParamsFromID ( id ) ) {
-		noInterrupts();
-		currentRotaryParams->maxVal = maxVal;
-		currentRotaryParams->currentVal = currentRotaryParams->minVal;
-		interrupts();
+		if ( maxVal > currentRotaryParams->minVal ) {
+#else
+			GetParamsFromID ( id );
+#endif
+			noInterrupts();
+			currentRotaryParams->maxVal = maxVal;
+			if ( currentRotaryParams->currentVal > maxVal )
+				currentRotaryParams->currentVal = currentRotaryParams->minVal;
+			interrupts();
+#if !defined ( SMALLEST_CODESIZE )
+		}
 	}
+#endif
 }
 
 /*
  * Force the requested rotary id to report it has changed.
  */
 void ky040 :: SetChanged ( uint8_t id ) {
+#if !defined ( SMALLEST_CODESIZE )
 	if ( GetParamsFromID ( id ) )
 		currentRotaryParams->changed = true;
+#else
+	GetParamsFromID ( id );
+	currentRotaryParams->changed = true;
+#endif
 }
 
 /*
  * Return the current value for the requested rotary id
  */
 int16_t ky040 :: GetRotaryValue ( uint8_t id ) {
+#if !defined ( SMALLEST_CODESIZE )
 	if ( GetParamsFromID ( id ) )
 		return currentRotaryParams->currentVal;
 	return 0;	// Not a valid value, but one is needed.
+#else
+	GetParamsFromID ( id );
+	return currentRotaryParams->currentVal;
+#endif
 }
 
 /*
@@ -305,17 +349,27 @@ bool ky040 :: SwitchPressed ( void ) {
 /* private function 
  * Find the parameter block for the requested id.
  */
+#if !defined ( SMALLEST_CODESIZE )
 bool ky040 :: GetParamsFromID ( uint8_t id ) {
 	if ( params != 0 )	{
+#else
+void ky040 :: GetParamsFromID ( uint8_t id ) {
+#endif
 		if ( id == CURRENT_ID ) id = currentID;
 		for ( uint8_t i = 0; i < numRotaries; i++ ) {
 			if ( id == params[i].id )	{
 				currentRotaryParams = &params[i];
+#if !defined ( SMALLEST_CODESIZE )
 				return true;
+#else
+				return;
+#endif
 			}
 		}
+#if !defined ( SMALLEST_CODESIZE )
 	}
 	return false;
+#endif
 }
 
 /*----------------------------------------------------------------------
@@ -323,11 +377,11 @@ bool ky040 :: GetParamsFromID ( uint8_t id ) {
  * that may be connected to the Arduino. To add more encoders, declare
  * more interrupt routines and tie then to the appropriate data.
  */
-void ky040 :: RotaryClkInterruptOn_3 ( void ) {
+ void ky040 :: RotaryClkInterruptOn_3 ( void ) {
 	ky040::UpdateRotaryCount(ky040::dtPin_3,ky040::params_3);
 }
 
-void ky040 :: RotaryClkInterruptOn_2 ( void ) {
+ void ky040 :: RotaryClkInterruptOn_2 ( void ) {
 	ky040::UpdateRotaryCount(ky040::dtPin_2,ky040::params_2);
 }
 
@@ -350,15 +404,15 @@ void ky040 :: RotaryClkInterruptOn_2 ( void ) {
 #endif
 
 #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)
-	void ky040 :: RotaryClkInterruptOn_0 ( void ) {
+	 void ky040 :: RotaryClkInterruptOn_0 ( void ) {
 		ky040::UpdateRotaryCount(ky040::dtPin_0,ky040::params_0);
 	}
 
-	void ky040 :: RotaryClkInterruptOn_1 ( void ) {
+	 void ky040 :: RotaryClkInterruptOn_1 ( void ) {
 		ky040::UpdateRotaryCount(ky040::dtPin_1,ky040::params_1);
 	}
 
-	void ky040 :: RotaryClkInterruptOn_7 ( void ) {
+	 void ky040 :: RotaryClkInterruptOn_7 ( void ) {
 		ky040::UpdateRotaryCount(ky040::dtPin_7,ky040::params_7);
 	}
 #endif
@@ -367,11 +421,6 @@ void ky040 :: RotaryClkInterruptOn_2 ( void ) {
  * Generic procedure to increment/decrement the rotary counter
  */
 void ky040 :: UpdateRotaryCount ( uint8_t pin, volatile encoderParams * params ) {
-	/* TODO: Add an acceleration test. Store time, then at each interrupt
-	 * check interval from last interrupt, if smaller than TBD msec,
-	 * increase increment (multiply by 2, 4, 8?). How to handle rollover
-	 * is one problem that I need to think about.
-	 */
 	params->changed = true;
 	/* TODO: Could use a direct port read here.... save some time.
 	 * TODO: Could just increment / decrement a counter. The actual value
