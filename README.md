@@ -13,7 +13,7 @@ Recent bug fixes and modifications:
 
 | Date | Changes |
 | ---- | ------- |
-| 10/11/2017 | Example program now supports up to four encoders. Tested on an Arduino Micro. |
+| 10/11/2017 | Example program now supports up to four encoders. Tested on an Arduino Micro. Updates to ky040.cpp and ky040.h to support SMALLEST_CODESIZE, which, if defined, removes all runtime sanity checks. This option is for those who may be running low on program memory. |
 | 1/20/2017 | Finalized support for multiple Arduino board types |
 | Same | Bug fixed - when clkPin not correct, all functions should gracefully fail. |
 
