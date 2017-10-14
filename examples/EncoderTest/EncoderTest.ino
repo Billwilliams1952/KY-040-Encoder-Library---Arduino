@@ -24,24 +24,30 @@
 #include <ky-040.h> 
 
 /*
- * Define how many encoders you want to test - 1 to 4
+ * Define how many encoders you want to test: 1 to 4
  */
-#define NUMBER_OF_ENCODERS   4      // This code supports 1 to 4
-
-#define BOARD_LED           13
-
-// Error output messages
+#define NUMBER_OF_ENCODERS   1      // This code supports 1 to 4
+#define BOARD_LED           13      // I'm alive blinker
+/*
+ * Error output messages
+ */
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
   const char msg[] = "Only pins 2 and 3 are interrupt pins";
 #elif defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
   const char msg[] = "Only pins 2, 3, 18, 19, 20, and 21 are interrupt pins";
 #elif defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)
   const char msg[] = "Only pins 0, 1, 2, 3, and 7 are interrupt pins";
+#else
+  // TODO: Add more checks for other types..... Adafruit trinkets, etc.
+  const char msg[] = "Unknown processor type. Check your documentation for interrupt pins";
 #endif
-
-#define ROTARY_ID1           0      // Ids can range from 0 to 254, 255 is reserved
-#define ROTARY_ID2          10      // Ids can range from 0 to 254, 255 is reserved
-#define ROTARY_ID3          11      // Ids can range from 0 to 254, 255 is reserved
+/* 
+ * Define some rotary IDs. IDs can range from 0 to 254. 255 is reserved for the active one
+ * ( CURRENT_ID )
+ */
+#define ROTARY_ID1           1 
+#define ROTARY_ID2          10 
+#define ROTARY_ID3         100
 /*
  * Create encoders. 
  * Define how the encoder is connected to the Arduino. ENCODER_CLK is the interrupt pin
@@ -50,14 +56,14 @@
 #define ENCODER_CLK1         2      // This pin must have a minimum 0.47 uF capacitor
 #define ENCODER_DT1         A0      // data pin
 #define ENCODER_SW1         A1      // switch pin (active LOW)
-#define MAX_ROTARIES1        2      // this example define two rotaries for this encoder
+#define MAX_ROTARIES1        2      // this example defines two rotaries for this encoder
 ky040 encoder1(ENCODER_CLK1, ENCODER_DT1, ENCODER_SW1, MAX_ROTARIES1 );
 
 #if NUMBER_OF_ENCODERS >= 2
   #define ENCODER_CLK2         3      // This pin must have a minimum 0.47 uF capacitor    
   #define ENCODER_DT2         A2      // data pin
   #define ENCODER_SW2         A3      // switch pin (active LOW)
-  #define MAX_ROTARIES2        3      // this example define three rotaries for this encoder
+  #define MAX_ROTARIES2        3      // this example defines three rotaries for this encoder
   ky040 encoder2(ENCODER_CLK2, ENCODER_DT2, ENCODER_SW2, MAX_ROTARIES2 );
 #endif
 
@@ -80,21 +86,28 @@ ky040 encoder1(ENCODER_CLK1, ENCODER_DT1, ENCODER_SW1, MAX_ROTARIES1 );
 #endif
 
 void Error ( int encoderNum ) {
-  Serial.print("ERROR creating encoder "); Serial.print(encoderNum); Serial.println("!");
-  Serial.println(msg);
-  while(1);   // Halt and catch fire
+    Serial.print("ERROR creating encoder "); Serial.print(encoderNum); Serial.println("!");
+    Serial.println(msg);
+    Serial.println("Possible malloc error, the rotary ID is incorrect, or too many rotaries");
+    while(1);   // Halt and catch fire
 }
 
 void setup() {
-    // put your setup code here, to run once:
-
     pinMode(BOARD_LED,OUTPUT);
     digitalWrite(BOARD_LED,LOW);
         
-    Serial.begin(115200) ;   // write out the values. Make sure the Terminal is also set to 115200
+    Serial.begin(9600) ;   // write out the values. Make sure the Terminal is also set to 9600
     while ( ! Serial ) ;
 
-    // The AddRotaryCounter function is declared a void type if SMALLEST_CODESIZE if defined in ky040.h
+
+#if NUMBER_OF_ENCODERS < 1 || NUMBER_OF_ENCODERS > 4
+    Serial.println("Wrong number of encoders have been defined! ( expecting 1 to 4 )");
+    while(1);
+#endif
+
+#if NUMBER_OF_ENCODERS >= 1
+    // NOTE: The AddRotaryCounter function is declared a void type if SMALLEST_CODESIZE if defined in ky040.h
+    
     // Add the two rotaries for the first encoder.
     // Define a rotary to go from -20 to 20 in increments of 2. Initialize it to 10. Allow it to rollover
     if ( ! encoder1.AddRotaryCounter(ROTARY_ID1, 10, -20, 20, 2, true ) ) {
@@ -108,12 +121,10 @@ void setup() {
 
     // Make ROTARY_ID2 active (responds to encoder shaft movements)
     encoder1.SetRotary(ROTARY_ID2);
+#endif
 
 #if NUMBER_OF_ENCODERS >= 2
-    //--------------------------------------
-    // Now for the second encoder
     // Define a rotary to go from -1000 to -500 in increments of 50. Initialize it to -750. Allow it to rollover
-
     if ( ! encoder2.AddRotaryCounter(ROTARY_ID1, -750, -1000, -500, 50, true ) ) {
       Error(2);
     }
@@ -133,76 +144,83 @@ void setup() {
 #endif
 
 #if NUMBER_OF_ENCODERS >= 3
-    //--------------------------------------
-    // Now for the third encoder.  Make a generic counter to 20 with rollover
+    // Now for the third encoder.  Make a generic counter 0 to 20 with rollover
     if ( ! encoder3.AddRotaryCounter(ROTARY_ID1, 20, true ) ) {
       Error(3);   
     }
 #endif
 
 #if NUMBER_OF_ENCODERS == 4
-    //--------------------------------------
-    // Now for the fourth encoder.  Make a generic counter to 10 with no rollover
+    // Now for the fourth encoder.  Make a generic counter 0 to 10 with no rollover
     if ( ! encoder4.AddRotaryCounter(ROTARY_ID1, 10 ) ) {
       Error(4);  
     }
 #endif
+
 }
 
 void loop() {
-    static bool firstTime = true;
+    static bool firstTime = true;   // Force an initial display of rotary values
     
-    digitalWrite(BOARD_LED,millis() % 1000 > 500);    
-  
-    // put your main code here, to run repeatedly:
-  
-    // On each encoder switch press, toggle between the two rotaries and print their values.
+    digitalWrite(BOARD_LED,millis() % 1000 > 500);  // Blink I'm alive   
+
+ #if NUMBER_OF_ENCODERS >= 1
+    // On each encoder switch press, toggle between the two rotaries.
     // Use the IsActive call 
     if ( encoder1.SwitchPressed() or firstTime ) {
+        Serial.print("Encoder 1 switch pressed. ");
         if ( encoder1.IsActive(ROTARY_ID1) ) {
             encoder1.SetRotary(ROTARY_ID2);
-            Serial.println("Encoder 1 ROTARY_ID2 Active");
+            Serial.println("ROTARY_ID2 now Active.");
         }
         else {
             encoder1.SetRotary(ROTARY_ID1);
-            Serial.println("Encoder 1 ROTARY_ID1 Active");
+            Serial.println("ROTARY_ID1 now Active.");
         }
         encoder1.SetChanged();   // force an update on active rotary   
     }
+#endif
 
 #if NUMBER_OF_ENCODERS >= 2
+    // On each encoder switch press, toggle between the three rotaries.
     if ( encoder2.SwitchPressed() ) {
+        Serial.print("Encoder 2 switch pressed. ");
         if ( encoder2.IsActive(ROTARY_ID1) ) {
             encoder2.SetRotary(ROTARY_ID2);
-            Serial.println("Encoder 2 ROTARY_ID2 Active");
+            Serial.println("ROTARY_ID2 now Active.");
         }
         else if ( encoder2.IsActive(ROTARY_ID2) ) {
             encoder2.SetRotary(ROTARY_ID3);
-            Serial.println("Encoder 2 ROTARY_ID3 Active");
+            Serial.println("ROTARY_ID3 now Active.");
         }
         else {
             encoder2.SetRotary(ROTARY_ID1);
-            Serial.println("Encoder 2 ROTARY_ID1 Active");            
+            Serial.println("ROTARY_ID1 now Active.");            
         }
         encoder2.SetChanged();   // force an update on active rotary   
     }
 #endif
 
 #if NUMBER_OF_ENCODERS >= 3
-  // Since there is only one rotary defined for this encoder, there is nothing to do...
+    if ( encoder3.SwitchPressed() ) {
+      // There is only one rotary defined in this case.
+      Serial.println("Encoder 3 switch pressed.");
+    }
 #endif
 
 #if NUMBER_OF_ENCODERS == 4
-  // Since there is only one rotary defined for this encoder, there is nothing to do...
+    if ( encoder4.SwitchPressed() ) {
+      // There is only one rotary defined in this case.
+      Serial.println("Encoder 4 switch pressed.");
+    }
 #endif
-
-    firstTime = false;
 
 #if NUMBER_OF_ENCODERS == 1
     if ( encoder1.HasRotaryValueChanged() ) {
         Serial.print("Encoder 1 ROTARY_ID1: "); Serial.println(encoder1.GetRotaryValue(ROTARY_ID1));
-        Serial.print("Encoder 1 ROTARY_ID2: "); Serial.println(encoder1.GetRotaryValue(ROTARY_ID2));  
-        Serial.println("---------------------------------------");
+        Serial.print("Encoder 1 ROTARY_ID2: "); Serial.println(encoder1.GetRotaryValue(ROTARY_ID2)); 
+        
+        Serial.println("---------------------------------------"); 
     }
 #elif NUMBER_OF_ENCODERS == 2
     if ( encoder1.HasRotaryValueChanged() || encoder2.HasRotaryValueChanged() ) {
@@ -211,6 +229,7 @@ void loop() {
         Serial.print("Encoder 2 ROTARY_ID1: "); Serial.println(encoder2.GetRotaryValue(ROTARY_ID1));
         Serial.print("Encoder 2 ROTARY_ID2: "); Serial.println(encoder2.GetRotaryValue(ROTARY_ID2));  
         Serial.print("Encoder 2 ROTARY_ID3: "); Serial.println(encoder2.GetRotaryValue(ROTARY_ID3));
+        
         Serial.println("---------------------------------------");
     }
 #elif NUMBER_OF_ENCODERS == 3
@@ -223,6 +242,7 @@ void loop() {
         Serial.print("Encoder 2 ROTARY_ID3: "); Serial.println(encoder2.GetRotaryValue(ROTARY_ID3));
         // Since there is only one rotary for #3 encoder, we can just ask for current (active) one
         Serial.print("Encoder 3 ROTARY_ID1: "); Serial.println(encoder3.GetRotaryValue());
+        
         Serial.println("---------------------------------------");
     }
 #elif NUMBER_OF_ENCODERS == 4
@@ -236,7 +256,10 @@ void loop() {
         // Since there is only one rotary for #3 and #4 encoders, we can just ask for current (active) ones
         Serial.print("Encoder 3 ROTARY_ID1: "); Serial.println(encoder3.GetRotaryValue());
         Serial.print("Encoder 4 ROTARY_ID1: "); Serial.println(encoder4.GetRotaryValue());
+        
         Serial.println("---------------------------------------");
     }
 #endif
+
+    firstTime = false;    // Now only update display if a rotary value has changed.
 }
