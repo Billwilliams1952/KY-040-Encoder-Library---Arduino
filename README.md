@@ -33,38 +33,37 @@ http://henrysbench.capnfatz.com/henrys-bench/arduino-sensors-and-input/keyes-ky-
 Download the ZIP file and extract into your **sketchbook/libraries** directory. Exit the Arduino program (if open) and restart it to see the KY-040 library with its sketch examples.
 
 ## API Reference
-
-	ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin,
-			uint8_t maxRotarys = 1 );
+```C++
+ky040 ( uint8_t interruptClkPin, uint8_t dtPin, uint8_t switchPin, uint8_t maxRotarys = 1 );
 	
-	// Create a rotary counter specifying all parameters.
-	bool AddRotaryCounter ( uint8_t id, int16_t currentVal, int16_t minVal,
+// Create a rotary counter specifying all parameters.
+bool AddRotaryCounter ( uint8_t id, int16_t currentVal, int16_t minVal,
 			int16_t maxVal, int16_t inc = 1, bool rollOver = true );
 			
-	// Support simple rotary counters from 0 to maxVal.
-	bool AddRotaryCounter ( uint8_t id, int16_t maxVal, bool rollOver = false );
+// Support simple rotary counters from 0 to maxVal.
+bool AddRotaryCounter ( uint8_t id, int16_t maxVal, bool rollOver = false );
 	
-	// Make rotary number 'id' the active one - responding to user inputs.
-	bool SetRotary ( uint8_t id );
+// Make rotary number 'id' the active one - responding to user inputs.
+bool SetRotary ( uint8_t id );
 
-	// True if rotary number 'id' value has changed.
-	bool HasRotaryValueChanged ( uint8_t id = CURRENT_ID );
+// True if rotary number 'id' value has changed.
+bool HasRotaryValueChanged ( uint8_t id = CURRENT_ID );
 
-	// Force a changed status for rotary number 'id'.
-	void SetChanged ( uint8_t id = CURRENT_ID );
+// Force a changed status for rotary number 'id'.
+void SetChanged ( uint8_t id = CURRENT_ID );
 	
-	// Get the current rotary value for roatary number 'id'. After this call, HasRotaryValueChanged returns false.
-	int16_t GetRotaryValue ( uint8_t id = CURRENT_ID );
+// Get the current rotary value for roatary number 'id'. After this call, HasRotaryValueChanged returns false.
+int16_t GetRotaryValue ( uint8_t id = CURRENT_ID );
 
-	// Change the maximum allowed value on rotary number 'id'.
-	void SetMaxValueOnRotary ( int16_t maxVal, uint8_t id = CURRENT_ID );
+// Change the maximum allowed value on rotary number 'id'.
+void SetMaxValueOnRotary ( int16_t maxVal, uint8_t id = CURRENT_ID );
 
-	// True if rotary number 'id' is the active one.
-	bool IsActive ( uint8_t id );
+// True if rotary number 'id' is the active one.
+bool IsActive ( uint8_t id );
 
-	// True if the switch associated with the encoder is pressed.
-	bool SwitchPressed ( void );
-
+// True if the switch associated with the encoder is pressed.
+bool SwitchPressed ( void );
+```
 This program uses the Arduino API (**Arduino.h**) and **stdlib.h**; no other special libraries are required. It has been tested on the Arduino Micro.
 
 ## Tests
