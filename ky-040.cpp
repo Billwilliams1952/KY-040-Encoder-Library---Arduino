@@ -35,8 +35,8 @@
 volatile encoderParams * ky040 :: params_2;
 volatile encoderParams * ky040 :: params_3;
 
-uint8_t ky040 :: dtPin_2 = 0;		// initalize to invalid pins
-uint8_t ky040 :: dtPin_3 = 0;		// initalize to invalid pins
+uint8_t ky040 :: dtPin_2 = 0;		// initialize to invalid pins
+uint8_t ky040 :: dtPin_3 = 0;		// initialize to invalid pins
 
 /*
  * Arduino Mega, Mega ADK
@@ -48,10 +48,10 @@ uint8_t ky040 :: dtPin_3 = 0;		// initalize to invalid pins
 	volatile encoderParams * ky040 :: params_19;
 	volatile encoderParams * ky040 :: params_20;
 	volatile encoderParams * ky040 :: params_21;
-	uint8_t ky040 :: dtPin_18 = 0;		// initalize to invalid pins
-	uint8_t ky040 :: dtPin_19 = 0;		// initalize to invalid pins
-	uint8_t ky040 :: dtPin_20 = 0;		// initalize to invalid pins
-	uint8_t ky040 :: dtPin_21 = 0;		// initalize to invalid pins
+	uint8_t ky040 :: dtPin_18 = 0;		// initialize to invalid pins
+	uint8_t ky040 :: dtPin_19 = 0;		// initialize to invalid pins
+	uint8_t ky040 :: dtPin_20 = 0;		// initialize to invalid pins
+	uint8_t ky040 :: dtPin_21 = 0;		// initialize to invalid pins
 #endif
 
 /*
@@ -62,9 +62,9 @@ uint8_t ky040 :: dtPin_3 = 0;		// initalize to invalid pins
 	volatile encoderParams * ky040 :: params_0;
 	volatile encoderParams * ky040 :: params_1;
 	volatile encoderParams * ky040 :: params_7;
-	uint8_t ky040 :: dtPin_0 = 255;		// initalize to invalid pins
-	uint8_t ky040 :: dtPin_1 = 0;		// initalize to invalid pins
-	uint8_t ky040 :: dtPin_7 = 0;		// initalize to invalid pins
+	uint8_t ky040 :: dtPin_0 = 255;		// initialize to invalid pins
+	uint8_t ky040 :: dtPin_1 = 0;		// initialize to invalid pins
+	uint8_t ky040 :: dtPin_7 = 0;		// initialize to invalid pins
 #endif
 
 /*
@@ -276,7 +276,7 @@ bool ky040 :: HasRotaryValueChanged ( uint8_t id ) {
 
 /*
  * Set the maximum value for the requested rotary. TODO: have a generic
- * fuction to changed all of the parameters on a rotary. How often
+ * function to changed all of the parameters on a rotary. How often
  * would this be needed?
  */
 void ky040 :: SetMaxValueOnRotary ( int16_t maxVal, uint8_t id ) {
